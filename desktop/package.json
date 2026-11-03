@@ -1,6 +1,6 @@
 {
   "name": "campus-food-waste-desktop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "校園廚餘管理 Windows 單機版",
   "main": "app/main.cjs",
   "author": "Campus Food Waste Management",
