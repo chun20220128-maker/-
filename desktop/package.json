@@ -1,0 +1,72 @@
+{
+  "name": "campus-food-waste-desktop",
+  "version": "1.0.0",
+  "description": "校園廚餘管理 Windows 單機版",
+  "main": "app/main.cjs",
+  "author": "Campus Food Waste Management",
+  "private": true,
+  "scripts": {
+    "prepare-ui": "node scripts/prepare-ui.cjs",
+    "test": "node --test --test-isolation=none --test-reporter=spec test/*.test.cjs",
+    "start": "electron .",
+    "build:win": "npm run prepare-ui && electron-builder --win nsis --x64 --publish never",
+    "build:linux-test": "electron-builder --linux dir --publish never",
+    "test:desktop": "node test/desktop.e2e.cjs",
+    "checksums": "node scripts/checksums.cjs"
+  },
+  "devDependencies": {
+    "electron": "45.2.1",
+    "electron-builder": "26.18.0",
+    "playwright": "1.64.1"
+  },
+  "build": {
+    "appId": "tw.campus.foodwaste",
+    "productName": "校園廚餘管理",
+    "copyright": "校園廚餘管理",
+    "asar": true,
+    "compression": "maximum",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "app/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "CampusFoodWaste-Setup-${version}-${arch}.${ext}",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "校園廚餘管理",
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true,
+      "installerLanguages": [
+        "zh_TW",
+        "en_US"
+      ],
+      "language": "1028",
+      "script": "build/installer.nsi"
+    },
+    "electronLanguages": [
+      "zh-TW",
+      "en-US"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chun20220128-maker/-.git"
+  }
+}

@@ -1,0 +1,73 @@
+name: Windows desktop installer
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/windows-desktop.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: desktop
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: node node_modules/electron/install.js
+      - run: npm run prepare-ui
+      - run: npm test
+      - run: npm run test:desktop
+      - run: npm run build:win
+      - name: Verify Windows install, installed app, and uninstall
+        run: |
+          $setup = (Get-ChildItem dist/CampusFoodWaste-Setup-*-x64.exe).FullName
+          $destination = Join-Path $env:RUNNER_TEMP 'CampusFoodWasteInstalled'
+          $p = Start-Process -FilePath $setup -ArgumentList @('/S', "/D=$destination") -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "Install failed: $($p.ExitCode)" }
+          $exe = Join-Path $destination '校園廚餘管理.exe'
+          if (!(Test-Path $exe)) { throw 'Installed executable missing' }
+          $env:CAMPUS_ELECTRON_EXECUTABLE = $exe
+          npm run test:desktop
+          if ($LASTEXITCODE -ne 0) { throw 'Installed application test failed' }
+          Remove-Item Env:CAMPUS_ELECTRON_EXECUTABLE
+          $dataDir = Join-Path $env:APPDATA 'CampusFoodWaste'
+          New-Item -ItemType Directory -Force $dataDir | Out-Null
+          $probe = Join-Path $dataDir 'uninstall-preservation-test.txt'
+          Set-Content $probe 'Must survive uninstall'
+          $uninstall = Join-Path $destination '解除安裝.exe'
+          $u = Start-Process -FilePath $uninstall -ArgumentList '/S' -Wait -PassThru
+          for ($i=0; $i -lt 20 -and (Test-Path $exe); $i++) { Start-Sleep -Seconds 1 }
+          if (Test-Path $exe) { throw 'Uninstall did not remove application' }
+          if (!(Test-Path $probe)) { throw 'Uninstall removed user data' }
+      - run: npm run checksums
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: |
+            desktop/dist/CampusFoodWaste-Setup-*-x64.exe
+            desktop/dist/SHA256SUMS.txt
+            desktop/WINDOWS-INSTALLATION.md
+      - name: Publish tested installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = node -p "require('./package.json').version"
+          $tag = "desktop-v$version"
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "校園廚餘管理 Windows 單機版 $version" --notes-file WINDOWS-INSTALLATION.md
+            if ($LASTEXITCODE -ne 0) { throw 'Release creation failed' }
+          }
+          gh release upload $tag dist/CampusFoodWaste-Setup-*-x64.exe dist/SHA256SUMS.txt WINDOWS-INSTALLATION.md --repo $env:GITHUB_REPOSITORY --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Release upload failed' }
