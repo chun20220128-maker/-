@@ -56,7 +56,7 @@ Section "安裝校園廚餘管理"
  Call ValidateDirectory
  SetShellVarContext current
  SetOutPath "$INSTDIR"
- File /r "${PROJECT_DIR}/dist/win-unpacked/*"
+ File /r "${APP_DIR}"
  FileOpen $0 "$INSTDIR\campus-install.marker" w
  FileWrite $0 "CampusFoodWaste 1"
  FileClose $0

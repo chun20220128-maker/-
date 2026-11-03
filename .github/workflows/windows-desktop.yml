@@ -28,7 +28,18 @@ jobs:
       - run: npm run prepare-ui
       - run: npm test
       - run: npm run test:desktop
-      - run: npm run build:win
+      - name: Build Windows installer
+        run: |
+          npm run build:win *> build-log.txt
+          $code = $LASTEXITCODE
+          Get-Content build-log.txt
+          if ($code -ne 0) {
+            '## Windows installer build error' | Add-Content $env:GITHUB_STEP_SUMMARY
+            '```text' | Add-Content $env:GITHUB_STEP_SUMMARY
+            Get-Content build-log.txt -Tail 100 | Add-Content $env:GITHUB_STEP_SUMMARY
+            '```' | Add-Content $env:GITHUB_STEP_SUMMARY
+            throw "Windows installer build failed ($code). See job summary."
+          }
       - name: Verify Windows install, installed app, and uninstall
         run: |
           $setup = (Get-ChildItem dist/CampusFoodWaste-Setup-*-x64.exe).FullName
