@@ -11,8 +11,7 @@ VIAddVersionKey /LANG=1028 "LegalCopyright" "校園廚餘管理"
 InstallDir "$LOCALAPPDATA\Programs\CampusFoodWaste"
 InstallDirRegKey HKCU "Software\CampusFoodWaste" "InstallPath"
 RequestExecutionLevel user
-SetCompressor /SOLID lzma
-SetCompressorDictSize 64
+SetCompressor /SOLID zlib
 ShowInstDetails show
 ShowUninstDetails show
 !define MUI_ABORTWARNING
