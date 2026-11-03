@@ -3,6 +3,11 @@
 !include "x64.nsh"
 !include "WinVer.nsh"
 Name "校園廚餘管理"
+VIProductVersion "${VERSION}.0"
+VIAddVersionKey /LANG=1028 "ProductName" "校園廚餘管理"
+VIAddVersionKey /LANG=1028 "FileDescription" "校園廚餘管理 Windows 安裝程式"
+VIAddVersionKey /LANG=1028 "FileVersion" "${VERSION}"
+VIAddVersionKey /LANG=1028 "LegalCopyright" "校園廚餘管理"
 InstallDir "$LOCALAPPDATA\Programs\CampusFoodWaste"
 InstallDirRegKey HKCU "Software\CampusFoodWaste" "InstallPath"
 RequestExecutionLevel user

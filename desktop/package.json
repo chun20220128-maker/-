@@ -9,7 +9,7 @@
     "prepare-ui": "node scripts/prepare-ui.cjs",
     "test": "node --test --test-isolation=none --test-reporter=spec test/*.test.cjs",
     "start": "electron .",
-    "build:win": "npm run prepare-ui && electron-builder --win nsis --x64 --publish never",
+    "build:win": "npm run prepare-ui && electron-builder --win --x64 --dir --publish never && node scripts/build-installer.cjs",
     "build:linux-test": "electron-builder --linux dir --publish never",
     "test:desktop": "node test/desktop.e2e.cjs",
     "checksums": "node scripts/checksums.cjs"
