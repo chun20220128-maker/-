@@ -46,10 +46,22 @@ Function .onInit
 FunctionEnd
 Function ValidateDirectory
  IfFileExists "$INSTDIR\campus-install.marker" valid
- IfFileExists "$INSTDIR\*.*" occupied valid
- occupied:
+ ClearErrors
+ FindFirst $0 $1 "$INSTDIR\*"
+ IfErrors valid
+ inspect_entry:
+  StrCmp $1 "." next_entry
+  StrCmp $1 ".." next_entry
+  StrCmp $1 "" empty_directory
+  FindClose $0
   MessageBox MB_ICONEXCLAMATION "請選擇空白資料夾或原本的校園廚餘管理安裝資料夾。"
   Abort
+ next_entry:
+  ClearErrors
+  FindNext $0 $1
+  IfErrors empty_directory inspect_entry
+ empty_directory:
+  FindClose $0
  valid:
 FunctionEnd
 Section "安裝校園廚餘管理"
