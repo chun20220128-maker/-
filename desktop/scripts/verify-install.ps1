@@ -12,7 +12,9 @@ try {
   $desktopLink = Join-Path ([Environment]::GetFolderPath('Desktop')) '校園廚餘管理.lnk'
   if (!(Test-Path $desktopLink)) { throw 'Desktop shortcut missing' }
   $shell = New-Object -ComObject WScript.Shell
-  if ($shell.CreateShortcut($desktopLink).TargetPath -ne $exe) { throw 'Desktop shortcut target incorrect' }
+  $target = $shell.CreateShortcut($desktopLink).TargetPath
+  node scripts/verify-shortcut.cjs $target $exe
+  if ($LASTEXITCODE -ne 0) { throw "Desktop shortcut target incorrect: $target (expected $exe)" }
   $phase = 'installed-app'
   $env:CAMPUS_ELECTRON_EXECUTABLE = $exe
   npm run test:desktop *> installed-app-test.txt
