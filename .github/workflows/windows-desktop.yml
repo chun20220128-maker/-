@@ -37,6 +37,10 @@ jobs:
           if ($p.ExitCode -ne 0) { throw "Install failed: $($p.ExitCode)" }
           $exe = Join-Path $destination '校園廚餘管理.exe'
           if (!(Test-Path $exe)) { throw 'Installed executable missing' }
+          $desktopLink = Join-Path ([Environment]::GetFolderPath('Desktop')) '校園廚餘管理.lnk'
+          if (!(Test-Path $desktopLink)) { throw 'Desktop shortcut missing' }
+          $shell = New-Object -ComObject WScript.Shell
+          if ($shell.CreateShortcut($desktopLink).TargetPath -ne $exe) { throw 'Desktop shortcut target incorrect' }
           $env:CAMPUS_ELECTRON_EXECUTABLE = $exe
           npm run test:desktop
           if ($LASTEXITCODE -ne 0) { throw 'Installed application test failed' }
@@ -69,5 +73,8 @@ jobs:
             gh release create $tag --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "校園廚餘管理 Windows 單機版 $version" --notes-file WINDOWS-INSTALLATION.md
             if ($LASTEXITCODE -ne 0) { throw 'Release creation failed' }
           }
-          gh release upload $tag dist/CampusFoodWaste-Setup-*-x64.exe dist/SHA256SUMS.txt WINDOWS-INSTALLATION.md --repo $env:GITHUB_REPOSITORY --clobber
+          $assets = @(Get-ChildItem dist/CampusFoodWaste-Setup-*-x64.exe | ForEach-Object { $_.FullName })
+          $assets += (Resolve-Path dist/SHA256SUMS.txt).Path
+          $assets += (Resolve-Path WINDOWS-INSTALLATION.md).Path
+          gh release upload $tag @assets --repo $env:GITHUB_REPOSITORY --clobber
           if ($LASTEXITCODE -ne 0) { throw 'Release upload failed' }
